@@ -1,0 +1,22 @@
+<Project>
+
+    <PropertyGroup>
+        <ThisAssembly>$(MSBuildThisFileDirectory)bin\$(Configuration)\$(TargetFramework)\$(MSBuildThisFileName).dll</ThisAssembly>    
+        <FirstRun>false</FirstRun>    
+        <FirstRun Condition="!Exists('$(FileExplorerOutputFile)')">true</FirstRun>    
+    </PropertyGroup>
+
+    <UsingTask TaskName="$(MSBuildThisFileName).GeneratorTask" AssemblyFile="$(ThisAssembly)" />
+
+    <!-- Pointing 'Outputs' to a non existing file will disable up-to-date checks and run the task every time, there's probably a better way -->
+    <Target Name="FileExplorer" BeforeTargets="BeforeCompile;CoreCompile" Inputs="@(FileExplorerSourceFiles)" Outputs="$(FileExplorerOutputFile).nocache">
+        
+        <GeneratorTask SourceFiles="@(FileExplorerSourceFiles)" OutputFile="$(FileExplorerOutputFile)" TypeName="$(FileExplorerTypeName)" />
+        
+        <ItemGroup Condition="Exists('$(FileExplorerOutputFile)')">
+            <FileWrites Include="$(FileExplorerOutputFile)" />
+            <Compile Include="$(FileExplorerOutputFile)" Condition="$(FirstRun) == 'true'" />
+        </ItemGroup>
+    </Target>
+
+</Project>
